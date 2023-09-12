@@ -7,6 +7,7 @@ The 'analytical model' described by Hughes (2023, submitted). This predicts the 
 ## Example usage
 
 ```python
+# Setup
 import numpy as np
 from seawater.eos80 import pden
 H = 600
@@ -31,7 +32,11 @@ SL = A0*SR/(A0 + deltaA)
 T_eff = -85
 TL = (A0*TR + deltaA*T_eff)/(A0 + deltaA)
 rhoL = pden(SL, TL, 0)
+
+# The actual calculation
 U = melt_induced_circulation(rhoL, rhoR, t, x, z, y=y, L=L, tau=tau, f=f)
+
+# Get total outflow
 dy, dz = np.diff(yp1).mean(), np.diff(-zp1).mean()
 Qout = np.sum(U[U > 0]*dy*dz)
 print(f'Qout = {Qout.astype(int)} m^3/s')
