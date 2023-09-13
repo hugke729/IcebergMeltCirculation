@@ -256,32 +256,22 @@ def convert_p_prime_coefficients_to_U(A_P, phi, z, L, rhoL, rhoR):
 
 
 def calc_velocity_at_x(A_U, phi, z, x, t, f, c, L, y=None):
-    # In the paper, the quantities n_E and n_W are defined, but in this function
-    # it's easier to think about which modes to add and which to subtract
-
     is2D = y is None
+    isClosed = L is not None
+
     if is2D:
         U = zeros_like(z)
+        W = 0
     else:
         U = zeros([z.size, y.size])
         W = calc_half_width(y)
-        if L is not None:
-            # In the 2D case, the reflected wave travels 2L before catching up
-            # In the 3D case, it has to travel 2L + 2W
-            # Effectively, L -> L + W (see Section 3.8)
-            L += W
 
-    if (L is not None) and (x < -L):
+    if isClosed and (x < -L):
         # Outside the domain. No need to calculate anything
         return U
 
-    n_add = sum(c*t > abs(x))
-    if L:
-        n_sub = sum(c*t > abs(x + 2*L))
-    else:
-        n_sub = 0
-
-    for n in range(n_add):
+    n_E = sum(c*t > abs(x))
+    for n in range(n_E):
         U_n = A_U[n]*phi[:, n]
         if is2D:
             U += U_n
@@ -290,14 +280,16 @@ def calc_velocity_at_x(A_U, phi, z, x, t, f, c, L, y=None):
             decay_term = sech(W/Lr)*exp(-sign(x)*y/Lr)
             U += U_n[:, None]*decay_term[None, :]
 
-    for n in range(n_sub):
-        U_n = A_U[n]*phi[:, n]
-        if is2D:
-            U -= U_n
-        else:
-            Lr = c[n]/f
-            decay_term = sech(W/Lr)*exp(-sign(x)*y/Lr)
-            U -= U_n[:, None]*decay_term[None, :]
+    if isClosed:
+        n_W = sum(c*t > x + 2*L + 2*W)
+        for n in range(n_W):
+            U_n = A_U[n]*phi[:, n]
+            if is2D:
+                U -= U_n
+            else:
+                Lr = c[n]/f
+                decay_term = sech(W/Lr)*exp(-y/Lr)
+                U -= U_n[:, None]*decay_term[None, :]
 
     return U
 
@@ -315,12 +307,6 @@ def melt_induced_circulation(
     - If ``y`` is specified, the domain is 3D, otherwise it is 2D
     - If ``L`` is specified, the domain is closed on the left, otherwise it is open
     - If ``tau`` is specified, the forcing is gradual, otherwise it is a 'dam-break'
-
-    Known issue
-    -----------
-    - For the closed 3D geometry, the solution is wrong for x < 0 region because
-      the velocity field there does not include the effects of the wave that
-      travels anti-clockwise around the fjord perimeter.
 
     Inputs
     ------
