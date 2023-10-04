@@ -1,6 +1,6 @@
 # An analytical model of fjord circulation induced by melting icebergs
 
-The 'analytical model' described by Hughes (2023, submitted). This predicts the fjord circulation induced by melting icebergs in the configuration below. It also provides the simpler calculations laid out in the paper.
+The 'analytical model' described by [Hughes (2023)][doi]. This predicts the fjord circulation induced by melting icebergs in the configuration below. It also provides the simpler calculations laid out in the paper.
 
 ![](analytical_model_summary.png)
 
@@ -41,3 +41,4 @@ dy, dz = np.diff(yp1).mean(), np.diff(-zp1).mean()
 Qout = np.sum(U[U > 0]*dy*dz)
 print(f'Qout = {Qout.astype(int)} m^3/s')
 ```
+[doi]: http://dx.doi.org/10.5194/egusphere-2023-2106
