@@ -270,8 +270,8 @@ def calc_velocity_at_x(A_U, phi, z, x, t, f, c, L, y=None):
         # Outside the domain. No need to calculate anything
         return U
 
-    n_E = sum(c*t > abs(x))
-    for n in range(n_E):
+    n_E = sum(c[1:]*t > abs(x))
+    for n in range(1, n_E+1):
         U_n = A_U[n]*phi[:, n]
         if is2D:
             U += U_n
@@ -281,8 +281,8 @@ def calc_velocity_at_x(A_U, phi, z, x, t, f, c, L, y=None):
             U += U_n[:, None]*decay_term[None, :]
 
     if isClosed:
-        n_W = sum(c*t > x + 2*L + 2*W)
-        for n in range(n_W):
+        n_W = sum(c[1:]*t > x + 2*L + 2*W)
+        for n in range(1, n_W + 1):
             U_n = A_U[n]*phi[:, n]
             if is2D:
                 U -= U_n
